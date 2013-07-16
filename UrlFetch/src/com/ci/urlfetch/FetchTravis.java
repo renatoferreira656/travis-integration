@@ -15,7 +15,7 @@ import com.google.gson.JsonParser;
 public class FetchTravis {
 	public boolean isBuildSuccess() {
 		try {
-			URL url = new URL("https://api.travis-ci.com/repositories/dextra/portal_documentos_plataforma/cc.json?token=6GHpRBf2tzsQJpzrmA7U&branch=master");
+			URL url = new URL("URL_TRAVIS_API");
 			Object content = url.getContent();
 
 			InputStreamReader reader = new InputStreamReader((InputStream) content);
