@@ -42,7 +42,7 @@ public class GcmBroadcastReceiver extends BroadcastReceiver {
 
 		PendingIntent contentIntent = PendingIntent.getActivity(ctx, 0, new Intent(ctx, UrlFecth.class), 0);
 
-		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctx).setSmallIcon(R.drawable.common_signin_btn_icon_dark).setContentTitle("GCM Notification")
+		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctx).setSmallIcon(R.drawable.ic_launcher).setContentTitle("GCM Notification")
 				.setStyle(new NotificationCompat.BigTextStyle().bigText(msg)).setContentText(msg);
 
 		mBuilder.setContentIntent(contentIntent);
