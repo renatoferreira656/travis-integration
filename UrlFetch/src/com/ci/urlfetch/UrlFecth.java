@@ -1,22 +1,32 @@
 package com.ci.urlfetch;
 
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.PowerManager;
-import android.os.PowerManager.WakeLock;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
+
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 public class UrlFecth extends Activity {
 
+	private String SENDER_ID = "197385157020";
+
 	private final SongHelper sh = new SongHelper(this);
 
-	private UIUpdater ui;
-
-	private WakeLock wakeLock;
+	GoogleCloudMessaging gcm;
+	AtomicInteger msgId = new AtomicInteger();
+	SharedPreferences prefs;
+	Context context;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -24,36 +34,24 @@ public class UrlFecth extends Activity {
 		setContentView(R.layout.activity_url_fecth);
 
 		sh.populateSpinnerMusic();
-		ui = UIUpdater.create(sh);
+		context = getApplicationContext();
 
-		PowerManager mgr = (PowerManager) getApplicationContext().getSystemService(Context.POWER_SERVICE);
-		wakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyWakeLock");
+		((EditText) findViewById(R.id.textView2)).setText(Utils.getValue(Utils.GCM_ID, "", getApplicationContext()));
 
 		selectMusicButton();
+		registerButton();
 		playButton();
 		stopButton();
-		startMonitor();
-		stopMonitor();
+		gcm = GoogleCloudMessaging.getInstance(this);
 	}
 
-	private void startMonitor() {
-		Button button4 = (Button) findViewById(R.id.button4);
-		button4.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				ui.startUpdates();
-				wakeLock.acquire();
-			}
-		});
-	}
+	private void registerButton() {
+		Button button6 = (Button) findViewById(R.id.button6);
+		button6.setOnClickListener(new OnClickListener() {
 
-	private void stopMonitor() {
-		Button button5 = (Button) findViewById(R.id.button5);
-		button5.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				ui.stopUpdates();
-				wakeLock.release();
+				registerBackground();
 			}
 		});
 	}
@@ -87,6 +85,35 @@ public class UrlFecth extends Activity {
 				Utils.putValue(SongHelper.MUSIC_PATH, (String) s.getSelectedItem(), getApplicationContext());
 			}
 		});
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void registerBackground() {
+		new AsyncTask() {
+			@Override
+			protected String doInBackground(Object... params) {
+				String msg = "";
+				try {
+					if (gcm == null) {
+						gcm = GoogleCloudMessaging.getInstance(context);
+					}
+					String regid = gcm.register(SENDER_ID);
+					msg = "Device registered, registration id=" + regid;
+					((EditText) findViewById(R.id.textView2)).setText(regid);
+
+					Utils.putValue(Utils.GCM_ID, regid, context);
+				} catch (IOException ex) {
+					msg = "Error :" + ex.getMessage();
+				}
+				return msg;
+			}
+
+			@Override
+			protected void onPostExecute(Object result) {
+				Toast toast = Toast.makeText(context, result.toString(), Toast.LENGTH_SHORT);
+				toast.show();
+			}
+		}.execute(null, null, null);
 	}
 
 }

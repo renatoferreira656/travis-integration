@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import android.app.Activity;
+import android.content.Context;
 import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnPreparedListener;
@@ -24,11 +25,20 @@ public class SongHelper implements OnPreparedListener {
 
 	private final MediaPlayer mp = new MediaPlayer();
 
-	private Activity context;
+	private Activity activity;
+
+	private Context context;
 
 	private List<Map<String, String>> spinner = new ArrayList<Map<String, String>>();
 
 	public SongHelper(Activity context) {
+		this.activity = context;
+		this.context = context;
+		mp.setLooping(true);
+		mp.setOnPreparedListener(this);
+	}
+
+	public SongHelper(Context context) {
 		this.context = context;
 		mp.setLooping(true);
 		mp.setOnPreparedListener(this);
@@ -36,6 +46,9 @@ public class SongHelper implements OnPreparedListener {
 
 	public void songPrepareASync() {
 		String item = Utils.getValue(MUSIC_PATH, "", context);
+		if (spinner.size() <= 0) {
+			createPlayList();
+		}
 		for (Map<String, String> map : spinner) {
 			if (map.get(SONG_TITLE).equals(item)) {
 				mp.reset();
@@ -77,27 +90,29 @@ public class SongHelper implements OnPreparedListener {
 
 		String songs_name = "";
 		String mAudioPath = "";
-		if (mCursor.moveToFirst()) {
-			do {
+		if (mCursor != null) {
+			if (mCursor.moveToFirst()) {
+				do {
 
-				songs_name = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME));
-				mAudioPath = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
-				Map<String, String> song = new HashMap<String, String>();
+					songs_name = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME));
+					mAudioPath = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
+					Map<String, String> song = new HashMap<String, String>();
 
-				song.put(SONG_TITLE, songs_name);
-				song.put(SONG_PATH, mAudioPath);
+					song.put(SONG_TITLE, songs_name);
+					song.put(SONG_PATH, mAudioPath);
 
-				spinner.add(song);
+					spinner.add(song);
 
-			} while (mCursor.moveToNext());
+				} while (mCursor.moveToNext());
+			}
+
+			mCursor.close();
 		}
-
-		mCursor.close();
 	}
 
 	public void populateSpinnerMusic() {
 		createPlayList();
-		final Spinner s = (Spinner) context.findViewById(R.id.spinnerMusic);
+		final Spinner s = (Spinner) activity.findViewById(R.id.spinnerMusic);
 		s.setAdapter(createArrayAdapter());
 	}
 

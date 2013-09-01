@@ -6,6 +6,8 @@ import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 
 public class Utils {
+	public static final String GCM_ID = "gcm_id";
+
 	public static void putValue(String chave, String item, Context context) {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		Editor edit = prefs.edit();
